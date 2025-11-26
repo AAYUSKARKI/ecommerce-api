@@ -26,6 +26,7 @@ model User {
   orders       Order[]
   reviews      Review[]
   cart         Cart?
+  refresh_token   String?
   wishlist     WishlistItem[]
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
