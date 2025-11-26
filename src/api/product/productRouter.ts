@@ -13,14 +13,19 @@ import {
   CreateProductSchema,
   ProductQuerySchema,
 } from "./productModel";
-import { validateRequest } from "@/common/utils/httpHandlers";
 import { productController } from "./productController";
+import { verifyJWT } from "@/common/middleware/verifyJWT";
 
 export const productRegistry = new OpenAPIRegistry();
 export const productRouter: Router = express.Router();
 
 productRegistry.register("Product", ProductSchema);
 
+productRegistry.registerComponent("securitySchemes", "bearerAuth", {
+  type: "http",
+  scheme: "bearer",
+  bearerFormat: "JWT",
+});
 // CREATE
 productRegistry.registerPath({
   method: "post",
@@ -28,8 +33,9 @@ productRegistry.registerPath({
   tags: ["Product"],
   request: { body: { content: { "application/json": { schema: CreateProductSchema} } } },
   responses: createApiResponse(ProductSchema, "Success"),
+  security: [{ bearerAuth: [] }],
 });
-productRouter.post("/", validateRequest(CreateProductRequestSchema), productController.create);
+productRouter.post("/",verifyJWT, productController.create);
 
 // GET ALL
 productRegistry.registerPath({
@@ -51,7 +57,7 @@ productRegistry.registerPath({
   request: { params: GetProductSchema.shape.params },
   responses: createApiResponse(ProductSchema, "Success"),
 });
-productRouter.get("/:id", validateRequest(GetProductSchema), productController.getById);
+productRouter.get("/:id", productController.getById);
 
 // UPDATE
 productRegistry.registerPath({
@@ -63,8 +69,9 @@ productRegistry.registerPath({
     params: GetProductSchema.shape.params,
   },
   responses: createApiResponse(ProductSchema, "Success"),
+  security: [{ bearerAuth: [] }],
 });
-productRouter.patch("/:id", validateRequest(UpdateProductRequestSchema), productController.update);
+productRouter.patch("/:id", verifyJWT, productController.update);
 
 // DELETE
 productRegistry.registerPath({
@@ -73,5 +80,6 @@ productRegistry.registerPath({
   tags: ["Product"],
   request: { params: GetProductSchema.shape.params },
   responses: createApiResponse(z.void(), "Product deleted"),
+  security: [{ bearerAuth: [] }],
 });
-productRouter.delete("/:id", validateRequest(GetProductSchema), productController.delete);
+productRouter.delete("/:id", verifyJWT, productController.delete);
