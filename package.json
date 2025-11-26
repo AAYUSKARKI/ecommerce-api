@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node --import=tsx --watch src/index.ts",
+    "seed": "node --import=tsx src/seed/seed.ts",
     "build": "tsc && tsup"
   },
   "keywords": [],
@@ -26,6 +27,7 @@
     "helmet": "^8.1.0",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
+    "memory-cache": "^0.2.0",
     "pg": "^8.16.3",
     "pino": "^9.7.0",
     "pino-http": "^10.5.0",
@@ -38,6 +40,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/memory-cache": "^0.2.6",
     "@types/node": "^24.10.1",
     "@types/pg": "^8.15.6",
     "@types/swagger-jsdoc": "^6.0.4",
