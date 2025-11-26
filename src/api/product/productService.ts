@@ -1,7 +1,8 @@
 import { StatusCodes } from "http-status-codes";
-import type { Product, CreateProductInput, UpdateProductInput } from "./productModel";
+import type { Product,ProductListResponse, CreateProductInput, UpdateProductInput, ProductQuery } from "./productModel";
 import { ProductRepository } from "./productRepository";
 import { ServiceResponse } from "@/common/utils/serviceResponse";
+import { Prisma } from "@/generated/client";
 
 export class ProductService {
   private repository: ProductRepository;
@@ -24,14 +25,62 @@ export class ProductService {
     }
   }
 
-  async getAll(): Promise<ServiceResponse<Product[] | null>> {
+  async getAll(query: ProductQuery): Promise<ServiceResponse<ProductListResponse | null>> {
     try {
-      const products = await this.repository.findAllAsync();
-      return ServiceResponse.success("Products retrieved", products);
-    } catch (err) {
-      return ServiceResponse.failure("Error fetching products", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    const page = Math.max(1, parseInt(query.page || "1", 10));
+    const limit = Math.min(50, Math.max(1, parseInt(query.limit || "12", 10)));
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.ProductWhereInput = { isActive: true };
+
+    if (query.category) {
+      where.category = { slug: query.category.toLowerCase() };
     }
+    if (query.brand) {
+      where.brand = { contains: query.brand, mode: "insensitive" };
+    }
+    if (query.featured === "true") {
+      where.isFeatured = true;
+    }
+    if (query.q) {
+      where.OR = [
+        { name: { contains: query.q, mode: "insensitive" } },
+        { brand: { contains: query.q, mode: "insensitive" } },
+      ];
+    }
+
+    let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: "desc" };
+    switch (query.sort) {
+      case "price-asc":  orderBy = { price: "asc" }; break;
+      case "price-desc": orderBy = { price: "desc" }; break;
+      case "newest":     orderBy = { createdAt: "desc" }; break;
+      case "rating":     orderBy = { rating: "desc" }; break;
+    }
+
+    const [products, total] = await Promise.all([
+      this.repository.findManyPublic({ where, orderBy, skip, take: limit }),
+      this.repository.count(where),
+    ]);
+
+    return ServiceResponse.success("Products retrieved", {
+      data: products,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+        hasNext: page < Math.ceil(total / limit),
+        hasPrev: page > 1,
+      },
+    });
+  } catch (err) {
+    return ServiceResponse.failure(
+      "Error fetching products",
+      null,
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
   }
+}
 
   async getById(id: number): Promise<ServiceResponse<Product | null>> {
     try {

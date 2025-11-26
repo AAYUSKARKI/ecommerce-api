@@ -26,6 +26,28 @@ export const ProductSchema = z.object({
   updatedAt:        z.date(),
 });
 
+export const PublicProductSchema = ProductSchema.extend({
+  image: z.string().nullable().optional().describe("Primary image URL"),
+  category: z
+    .object({
+      name: z.string(),
+      slug: z.string(),
+    })
+    .nullable()
+    .optional(),
+})
+
+export const ProductListResponseSchema = z.object({
+  data: z.array(PublicProductSchema),
+  pagination: z.object({
+    page: z.number(),
+    limit: z.number(),
+    total: z.number(),
+    pages: z.number(),
+    hasNext: z.boolean(),
+    hasPrev: z.boolean(),
+  }),
+})
 // Schema for creating a product
 export const CreateProductSchema = z.object({
   name:             z.string().min(1),
@@ -58,7 +80,27 @@ export const GetProductSchema = z.object({
   params: z.object({ id: commonValidations.id }),
 });
 
+export const ProductQuerySchema = z.object({
+  category: z.string().optional(),
+  brand: z.string().optional(),
+  featured: z.enum(["true", "false"]).optional(),
+  q: z.string().optional(),
+  page: z.string().optional(),
+  limit: z.string().optional(),
+  sort: z.enum(["price-asc", "price-desc", "newest", "rating"]).optional(),
+});
+export interface ProductQuery {
+  category?: string;
+  brand?: string;
+  featured?: string;
+  q?: string;
+  page?: string;
+  limit?: string;
+  sort?: string; // "price-asc" | "price-desc" | "newest" | "rating"
+}
 // Types
 export type Product = z.infer<typeof ProductSchema>;
 export type CreateProductInput = z.infer<typeof CreateProductSchema>;
 export type UpdateProductInput = z.infer<typeof UpdateProductSchema>;
+export type PublicProduct = z.infer<typeof PublicProductSchema>;
+export type ProductListResponse = z.infer<typeof ProductListResponseSchema>;

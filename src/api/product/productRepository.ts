@@ -1,11 +1,11 @@
 // src/api/product/productRepository.ts
 
 import { prisma } from "@/common/lib/prisma";
-import { Prisma } from "@prisma/client"; // ← keep this import
+import { Prisma } from "@/generated/client";
 import type {
   Product,
   CreateProductInput,
-  UpdateProductInput,
+  UpdateProductInput
 } from "@/api/product/productModel";
 
 /**
@@ -43,7 +43,7 @@ export class ProductRepository {
     categoryId: true,
     createdAt: true,
     updatedAt: true,
-  } 
+  }
 
   async createAsync(data: CreateProductInput): Promise<Product> {
     const result = await prisma.product.create({
@@ -78,6 +78,31 @@ export class ProductRepository {
     return results.map(mapDecimalToNumber);
   }
 
+  async findManyPublic(params: {
+    where: Prisma.ProductWhereInput;
+    orderBy: Prisma.ProductOrderByWithRelationInput;
+    skip: number;
+    take: number;
+  }) {
+    const results = await prisma.product.findMany({
+      ...params,
+      select: {
+        ...this.select,
+        images: { where: { isPrimary: true }, select: { url: true }, take: 1 },
+        category: { select: { name: true, slug: true } },
+      },
+    });
+
+    return results.map((p: any) => ({
+      ...mapDecimalToNumber(p),
+      image: p.images[0]?.url || null,
+      category: p.category,
+    }));
+  }
+
+  async count(where: Prisma.ProductWhereInput) {
+    return prisma.product.count({ where });
+  }
   async updateAsync(id: number, data: UpdateProductInput): Promise<Product> {
     const result = await prisma.product.update({
       where: { id },

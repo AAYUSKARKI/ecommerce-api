@@ -9,7 +9,9 @@ import {
   UpdateProductRequestSchema,
   GetProductSchema,
   UpdateProductSchema,
+  ProductListResponseSchema,
   CreateProductSchema,
+  ProductQuerySchema,
 } from "./productModel";
 import { validateRequest } from "@/common/utils/httpHandlers";
 import { productController } from "./productController";
@@ -34,7 +36,10 @@ productRegistry.registerPath({
   method: "get",
   path: "/products",
   tags: ["Product"],
-  responses: createApiResponse(z.array(ProductSchema), "Success"),
+  summary: "Get products",
+  description: "Fetch products with filtering, search, sorting and pagination",
+  request: { query: ProductQuerySchema },
+  responses: createApiResponse(ProductListResponseSchema, "Success"),
 });
 productRouter.get("/", productController.getAll);
 

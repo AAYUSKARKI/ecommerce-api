@@ -9,8 +9,8 @@ class ProductController {
     res.status(response.statusCode).json(response);
   };
 
-  public getAll: RequestHandler = async (_req: Request, res: Response) => {
-    const response = await productService.getAll();
+  public getAll: RequestHandler = async (req: Request, res: Response) => {
+    const response = await productService.getAll(req.query);
     res.status(response.statusCode).json(response);
   };
 
