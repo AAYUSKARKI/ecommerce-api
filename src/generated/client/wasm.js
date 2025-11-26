@@ -271,7 +271,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\LENOVO\\OneDrive\\Desktop\\ecommerce-api\\src\\generated\\client",
+      "value": "C:\\Users\\LENOVO\\ecommerce-api\\src\\generated\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -289,7 +289,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\LENOVO\\OneDrive\\Desktop\\ecommerce-api\\src\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\LENOVO\\ecommerce-api\\src\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
