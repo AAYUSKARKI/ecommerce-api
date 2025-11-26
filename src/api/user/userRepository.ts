@@ -1,6 +1,8 @@
 import { prisma } from "@/common/lib/prisma";
 import type { Register } from "./userModel";
 import type { User } from "@/generated/client";
+import jwt from "jsonwebtoken";
+import cache from "memory-cache";
 export class UserRepository {
 	// Create a user
 	async createAsync(user: Register): Promise<User> {
@@ -40,6 +42,7 @@ export class UserRepository {
 				mobilenumber: true,
 				avatar: true,
 				role: true,
+				refresh_token: true,
 				email: true,
                 password: true,
                 createdAt: true,
@@ -56,6 +59,7 @@ export class UserRepository {
 				firstname: true,
 				lastname: true,
 				email: true,
+				refresh_token: true,
 				mobilenumber: true,
 				avatar: true,
 				role: true,
@@ -75,6 +79,7 @@ export class UserRepository {
 				firstname: true,
 				lastname: true,
 				email: true,
+				refresh_token: true,
 				password: true,
                 mobilenumber: true,
 				avatar: true,
@@ -84,4 +89,21 @@ export class UserRepository {
 			},
 		});
 	}
+
+	async logoutAsync(userId: number, access_token: string): Promise<null> {
+    await prisma.user.update({ where: { id: userId }, data: { refresh_token: null } });
+
+    const decodedToken = jwt.decode(access_token) as { exp?: number };
+
+    if (decodedToken?.exp) {
+      const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+      const timeToLive = decodedToken.exp - currentTimeInSeconds; // Remaining time before token expires
+
+      // Blacklist the access token in node-cache with TTL
+
+      cache.put(access_token, true, timeToLive * 1000);
+      // console.log(`Blacklisted token: ${access_token} for ${timeToLive} seconds`);
+    }
+    return null;
+  }
 }

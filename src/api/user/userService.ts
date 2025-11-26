@@ -84,6 +84,17 @@ export class UserService {
 			return ServiceResponse.failure("An error occurred while finding user.", null, StatusCodes.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+	async logout(userId: number, access_token: string): Promise<ServiceResponse<null>> {
+    try {
+      await this.userRepository.logoutAsync(userId, access_token);
+      return ServiceResponse.success<null>("Logged out successfully", null);
+    } catch (ex) {
+      const errorMessage = `Error logging out: ${(ex as Error).message}`;
+      console.error(errorMessage);
+      return ServiceResponse.failure("An error occurred while logging out.", null, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+  }
 }
 
 export const userService = new UserService();

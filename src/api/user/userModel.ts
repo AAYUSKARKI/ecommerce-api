@@ -12,6 +12,7 @@ export const UserSchema = z.object({
 	mobilenumber: z.string().nullable().optional(),
 	password: z.string(),
 	avatar: z.string().nullable().optional(),
+  refresh_token: z.string().nullable().optional(),
 	role: z.nativeEnum(Role),
 	email: z.string().email(),
 	createdAt: z.date(),

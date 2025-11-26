@@ -3,13 +3,19 @@ import express, { type Router } from "express";
 import { z } from "zod";
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { GetUserSchema, UserSchema,RegisterSchema,LoginSchema,LoginResponseSchema,RegisterRequestSchema,LoginRequestSchema } from "@/api/user/userModel";
-import { validateRequest } from "@/common/utils/httpHandlers";
 import { userController } from "./userController";
+import { verifyJWT } from "@/common/middleware/verifyJWT";
 
 export const userRegistry = new OpenAPIRegistry();
 export const userRouter: Router = express.Router();
 
 userRegistry.register("User", UserSchema);
+
+userRegistry.registerComponent("securitySchemes", "bearerAuth", {
+  type: "http",
+  scheme: "bearer",
+  bearerFormat: "JWT",
+});
 
 userRegistry.registerPath({
 	method: "post",
@@ -25,7 +31,7 @@ userRegistry.registerPath({
 	responses: createApiResponse(UserSchema, "Success"),
 });
 
-userRouter.post("/register", validateRequest(RegisterRequestSchema), userController.register);
+userRouter.post("/register", userController.register);
 
 userRegistry.registerPath({
 	method: "post",
@@ -41,7 +47,7 @@ userRegistry.registerPath({
 	responses: createApiResponse(LoginResponseSchema, "Success"),
 });
 
-userRouter.post("/login", validateRequest(LoginRequestSchema), userController.login);
+userRouter.post("/login", userController.login);
 
 userRegistry.registerPath({
 	method: "get",
@@ -60,4 +66,14 @@ userRegistry.registerPath({
 	responses: createApiResponse(UserSchema, "Success"),
 });
 
-userRouter.get("/:id", validateRequest(GetUserSchema), userController.getUser);
+userRouter.get("/:id", verifyJWT, userController.getUser);
+
+userRegistry.registerPath({
+  method: "post",
+  path: "/users/logout",
+  tags: ["User"],
+  responses: createApiResponse(z.null(), "Success"),
+  security: [{ bearerAuth: [] }],
+});
+
+userRouter.post("/logout", verifyJWT, userController.logout);

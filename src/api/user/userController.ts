@@ -2,6 +2,9 @@ import type { Request, RequestHandler, Response } from "express";
 import { RegisterSchema, LoginSchema } from "./userModel";
 import { userService } from "@/api/user/userService";
 import { logger } from "@/server";
+import { ServiceResponse } from "@/common/utils/serviceResponse";
+import { handleServiceResponse } from "@/common/utils/httpHandlers";
+import { StatusCodes } from "http-status-codes";
 
 class UserController {
     public register: RequestHandler = async (req: Request, res: Response) => {
@@ -27,6 +30,24 @@ class UserController {
 		const serviceResponse = await userService.findById(id);
 		res.status(serviceResponse.statusCode).send(serviceResponse);
 	};
+
+    public logout: RequestHandler = async (req: Request, res: Response) => {
+    if (!req.user) {
+      handleServiceResponse(ServiceResponse.failure("Not authorized", null, StatusCodes.UNAUTHORIZED), res);
+      return;
+    }
+
+    const access_token = req.headers.authorization?.replace("Bearer", "").trim();
+
+    if (!access_token) {
+      handleServiceResponse(ServiceResponse.failure("Access token is missing", null, StatusCodes.BAD_REQUEST), res);
+      return;
+    }
+
+    const serviceResponse = await userService.logout(req.user.id, access_token);
+
+    handleServiceResponse(serviceResponse, res);
+  };
 }
 
 export const userController = new UserController();
