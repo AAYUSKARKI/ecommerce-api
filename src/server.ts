@@ -11,6 +11,8 @@ import requestLogger from "@/common/middleware/requestLogger";
 import http from "http";
 import { productRouter } from "./api/product/productRouter";
 import { cartRouter } from "./api/cart/cartRouter";
+import { orderRouter } from "./api/order/orderRouter";
+import { wishlistRouter } from "./api/wishlist/wishlistRouter";
 
 const logger = pino({ name: "server start" });
 const app: Express = express();
@@ -34,6 +36,8 @@ app.use("/health-check", healthCheckRouter);
 app.use("/users", userRouter);
 app.use("/products", productRouter);
 app.use("/cart", cartRouter);
+app.use("/wishlist", wishlistRouter);
+app.use("/orders", orderRouter);
 
 // Swagger UI
 app.use(openAPIRouter);
